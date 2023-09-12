@@ -71,18 +71,19 @@ impl RequestHandler for WebsiteHandler {
 mod tests {
     use super::*;
 
+    // uses src/http as public so it doesn't rely on any actual files being in the public dir
     #[test]
-    fn read_index() {
-        let handler = WebsiteHandler::new(format!("{}/public", env!("CARGO_MANIFEST_DIR")));
-        match handler.read_file("index.html") {
+    fn read_existing_file() {
+        let handler = WebsiteHandler::new(format!("{}/src/http", env!("CARGO_MANIFEST_DIR")));
+        match handler.read_file("server.rs") {
             Ok(s) => assert!(s.len() > 0),
-            Err(e) => panic!("Error reading index.html file! {}", e),
+            Err(e) => panic!("Error reading server.rs file! {}", e),
         }
     }
     
     #[test]
     fn file_not_found() {
-        let handler = WebsiteHandler::new(format!("{}/public", env!("CARGO_MANIFEST_DIR")));
+        let handler = WebsiteHandler::new(format!("{}/src/http", env!("CARGO_MANIFEST_DIR")));
         match handler.read_file("invalid_file") {
             Err(e) => assert_eq!(e.kind(), ErrorKind::NotFound),
             Ok(_) => panic!("invalid_file read returned Ok"),
@@ -90,8 +91,8 @@ mod tests {
     }
     #[test]
     fn directory_transversal() {
-        let handler = WebsiteHandler::new(format!("{}/public", env!("CARGO_MANIFEST_DIR")));
-        match handler.read_file("../src/main.rs") {
+        let handler = WebsiteHandler::new(format!("{}/src/http", env!("CARGO_MANIFEST_DIR")));
+        match handler.read_file("../main.rs") {
             Err(e) => assert_eq!(e.kind(), ErrorKind::PermissionDenied),
             Ok(_) => panic!("DIRECTORY TRANSVERSAL ATTACK WAS SUCCESSFUL"),
         }

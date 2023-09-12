@@ -1,6 +1,6 @@
 #![allow(dead_code)]
-// #[macro_use]
-// extern crate io_error;
+#[macro_use]
+extern crate io_error;
 
 /** Shorthand for Some(String::From(x)) */
 macro_rules! some_str {

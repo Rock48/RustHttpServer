@@ -53,6 +53,18 @@ impl<'w> Response<'w> {
     }
 
     
+    /** Sends a 403 with a generic HTML body */
+    pub fn gen_403(&mut self) -> &mut Self {
+        self.status = StatusCode::PermissionDenied;
+        self.body = some_str!("<h1>403 Permission Denied</h1><p>You do not have permission to access the requested resource.</p>");
+        self
+    }
+    
+    /// Generates a 403 using [Response::gen_403()] and sends it
+    pub fn send_403(&mut self) -> IoResult<()> {
+        self.gen_403().send()
+    }
+
     /** Sends a 404 with a generic HTML body */
     pub fn gen_404(&mut self) -> &mut Self {
         self.status = StatusCode::NotFound;

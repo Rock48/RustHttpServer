@@ -3,7 +3,8 @@ use std::fmt::{Display, Formatter, Result as FmtResult};
 pub enum StatusCode {
     Ok = 200,
     BadRequest = 400,
-    NotFound = 404
+    PermissionDenied = 403,
+    NotFound = 404,
 }
 
 impl StatusCode {
@@ -17,7 +18,8 @@ impl Display for StatusCode {
         let reason = match self {
             Self::Ok => "Ok",
             Self::BadRequest => "Bad Request",
-            Self::NotFound => "Not Found"
+            Self::NotFound => "Not Found",
+            Self::PermissionDenied => "Permission Denied"
         };
         f.write_str(reason)
     }

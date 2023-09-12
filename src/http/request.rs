@@ -40,6 +40,33 @@ fn get_next_word(input: &str) -> Option<(&str,&str)> {
     None
 }
 
+#[cfg(test)]
+mod tests {
+    use crate::http::request::get_next_word;
+
+    #[test]
+    fn next_word() {
+        let mut my_str = "this is my\rstring ";
+        let (word,mut my_str) = get_next_word(&mut my_str).expect("no next word!");
+        assert_eq!(word, "this");
+        assert_eq!(my_str, "is my\rstring ");
+        let (word,mut my_str) = get_next_word(&mut my_str).expect("no next word!");
+        assert_eq!(word, "is");
+        assert_eq!(my_str, "my\rstring ");
+        let (word,mut my_str) = get_next_word(&mut my_str).expect("no next word!");
+        assert_eq!(word, "my");
+        assert_eq!(my_str, "string ");
+        let (word,mut my_str) = get_next_word(&mut my_str).expect("no next word!");
+        assert_eq!(word, "string");
+        assert_eq!(my_str, "");
+
+        match get_next_word(&mut my_str) {
+            None => {}, // do nothing, all good.
+            Some(t) => panic!("Found extra word, tuple result: {:?}", t)
+        }
+    }
+}
+
 impl<'rs> TryFrom<&'rs [u8]> for Request<'rs> {
     type Error = ParseError;
 

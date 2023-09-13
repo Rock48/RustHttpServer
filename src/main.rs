@@ -29,4 +29,3 @@ fn main() {
     let handler = WebsiteHandler::new(pub_dir);
     server.run(handler);
 }
-

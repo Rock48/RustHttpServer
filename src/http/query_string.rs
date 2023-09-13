@@ -18,6 +18,9 @@ impl<'rs> QueryString<'rs> {
     pub fn get(&self, key: &str) -> Option<&Value> {
         self.data.get(key)
     }
+    pub fn len(&self) -> usize {
+        self.data.len()
+    }
 }
 
 // ex a=1&b=2&c&e====&d=7&d=abc

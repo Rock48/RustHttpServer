@@ -2,6 +2,7 @@ use std::fmt::{Display, Formatter, Result as FmtResult, Debug};
 use std::str::{self, Utf8Error};
 
 #[derive(Debug)]
+#[derive(PartialEq)]
 pub enum ParseError {
     InvalidRequest,
     InvalidEncoding,

@@ -5,6 +5,7 @@ use std::str::FromStr;
 use super::ParseError;
 
 #[derive(Debug)]
+#[derive(PartialEq)]
 pub enum Method {
     GET,
     DELETE,

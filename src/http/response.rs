@@ -26,9 +26,7 @@ impl<'w> Debug for Response<'w> {
 }
 
 impl<'w> Response<'w> {
-    /**
-     * 
-     * Creates a new writer with an empty body */
+    /// Creates a new [Response] with an empty body 
     pub fn new(writer: &'w mut impl Write) -> Self {
         Self { status: StatusCode::Ok, body: None, writer }
     }
@@ -53,19 +51,20 @@ impl<'w> Response<'w> {
     }
 
     
-    /** Sends a 403 with a generic HTML body */
-    pub fn gen_403(&mut self) -> &mut Self {
-        self.status = StatusCode::PermissionDenied;
-        self.body = some_str!("<h1>403 Permission Denied</h1><p>You do not have permission to access the requested resource.</p>");
-        self
-    }
     
     /// Generates a 403 using [Response::gen_403()] and sends it
     pub fn send_403(&mut self) -> IoResult<()> {
         self.gen_403().send()
     }
 
-    /** Sends a 404 with a generic HTML body */
+    /// Sends a 403 with a generic HTML body
+    pub fn gen_403(&mut self) -> &mut Self {
+        self.status = StatusCode::PermissionDenied;
+        self.body = some_str!("<h1>403 Permission Denied</h1><p>You do not have permission to access the requested resource.</p>");
+        self
+    }
+
+    /// Sends a 404 with a generic HTML body
     pub fn gen_404(&mut self) -> &mut Self {
         self.status = StatusCode::NotFound;
         self.body = some_str!("<h1>404 Not Found</h1><p>The page you requested could not be found on this server.</p>");
@@ -93,3 +92,21 @@ impl<'w> Response<'w> {
         write!(self.writer,"HTTP/1.1 {} {}\r\nTODO: HEADERS\r\n\r\n{}",self.status.code(),self.status,body)
     }
 }
+
+#[test]
+#[cfg(test)]
+fn test_response() {
+    let mut b: Vec<u8> = Vec::new();
+    let mut res = Response::new(&mut b);
+
+    if let Err(e) = res.gen_404().append(Str!("Apples")).send() {
+        panic!("error writing to buffer, {}", e);
+    }
+    
+    let buf_str = String::from_utf8_lossy(&b);
+    println!("buffer: {:?}", buf_str);
+    assert_eq!(
+        buf_str, 
+        "HTTP/1.1 404 Not Found\r\nTODO: HEADERS\r\n\r\n<h1>404 Not Found</h1><p>The page you requested could not be found on this server.</p>Apples"
+    );
+} 

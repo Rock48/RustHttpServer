@@ -42,7 +42,9 @@ fn get_next_word(input: &str) -> Option<(&str,&str)> {
 
 #[cfg(test)]
 mod tests {
-    use crate::http::request::get_next_word;
+    use crate::http::query_string::Value;
+
+    use super::*;
 
     #[test]
     fn next_word() {
@@ -64,6 +66,38 @@ mod tests {
             None => {}, // do nothing, all good.
             Some(t) => panic!("Found extra word, tuple result: {:?}", t)
         }
+    }
+
+    #[test]
+    fn invalid_protocol() {
+        if let Err(e) = Request::try_from("GET /user?id=10 HTTP/1.2\r\n".as_bytes()) {
+            assert_eq!(e, ParseError::InvalidProtocol);
+        } else {
+            panic!("Invalid protocol came back valid");
+        }
+    }
+
+    #[test]
+    fn valid_request() {
+        let req = Request::try_from("GET /user?id=10 HTTP/1.1\r\nTODO: HEADERS\r\nNice Body".as_bytes()).expect("Request failed to parse");
+
+        assert_eq!(req.method, Method::GET);
+        assert_eq!(req.path, "/user");
+
+        let qs = req.query.expect("Query string missing");
+
+        assert_eq!(qs.len(), 1);
+        
+        let val = qs.get("id").expect("id in qs missing");
+
+        match &val {
+            Value::One(v) => assert_eq!(*v, "10"),
+            Value::Multiple(v) => panic!("user has multiple values {:?}", v),
+            Value::None => panic!("user has no value")
+        }
+
+        
+        assert_eq!(req.body, None); // TODO!!! 
     }
 }
 

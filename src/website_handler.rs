@@ -90,11 +90,11 @@ mod tests {
         }
     }
     #[test]
-    fn directory_transversal() {
+    fn directory_traversal() {
         let handler = WebsiteHandler::new(format!("{}/src/http", env!("CARGO_MANIFEST_DIR")));
         match handler.read_file("../main.rs") {
             Err(e) => assert_eq!(e.kind(), ErrorKind::PermissionDenied),
-            Ok(_) => panic!("DIRECTORY TRANSVERSAL ATTACK WAS SUCCESSFUL"),
+            Ok(_) => panic!("DIRECTORY TRAVERSAL ATTACK WAS SUCCESSFUL"),
         }
     }
 }

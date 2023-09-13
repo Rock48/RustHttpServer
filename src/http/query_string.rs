@@ -47,7 +47,12 @@ impl<'rs> From<&'rs str> for QueryString<'rs> {
 
             .and_modify(|existing| match existing {
                 // Must dereference pointer in order to overwrite the value, all enum variants take up the same space
-                Value::None => *existing = Value::One(val),
+                Value::None => {
+                    // do not switch to Value::One if there stil is no value
+                    if val != "" {
+                        *existing = Value::One(val)
+                    }
+                },
                 Value::One(prev) => *existing = Value::Multiple(vec![prev, val]),
                 Value::Multiple(vec) => vec.push(val)
 
@@ -80,7 +85,7 @@ mod tests {
     use super::*;
     #[test]
     fn parse_qs() {
-        let qs = QueryString::from("a=1&f&b=2&c&e====&d=7&d=abc&f=5");
+        let qs = QueryString::from("a=1&f&b=2&c&e====&d=7&c&d=abc&f=5&c");
 
         // { a: 1, b:2, c:None, e:===, d:[7, abc], f:5}
 

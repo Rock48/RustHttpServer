@@ -5,33 +5,35 @@ use std::{
         Formatter, Debug, Display,
         Result as FmtResult
     },
+    rc::Rc,
+    cell::RefCell
 };
 
-pub struct Response<'w> {
+pub struct Response {
     pub status: StatusCode,
     pub body: Option<String>,
-    writer: &'w mut dyn Write
+    writer: Rc<RefCell<dyn Write>>
 }
 
-impl<'w> Display for Response<'w> {
+impl Display for Response {
     fn fmt(&self, f: &mut Formatter) -> FmtResult {
         let body = self.body.as_deref().unwrap_or("");
         write!(f, "Status: {}, Body: {}", self.status, body)
     }
 }
-impl<'w> Debug for Response<'w> {
+impl Debug for Response {
     fn fmt(&self, f: &mut Formatter) -> FmtResult {
         write!(f, "Response {{ Status: {:?}, Body: {:?} }}", self.status, self.body)
     }
 }
 
-impl<'w> Response<'w> {
+impl Response {
     /// Creates a new [Response] with an empty body 
-    pub fn new(writer: &'w mut impl Write) -> Self {
+    pub fn new(writer: Rc<RefCell<dyn Write>>) -> Self {
         Self { status: StatusCode::Ok, body: None, writer }
     }
     
-    pub fn writer(&self) -> & dyn Write { self.writer }
+    pub fn writer(&self) -> Rc<RefCell<dyn Write>> { self.writer.clone() }
 
     pub fn ok(&mut self, body: Option<String>) -> IoResult<()> {
         self.status = StatusCode::Ok;
@@ -89,21 +91,24 @@ impl<'w> Response<'w> {
     pub fn send(&mut self) -> IoResult<()> {
         let body = self.body.as_deref().unwrap_or("");
 
-        write!(self.writer,"HTTP/1.1 {} {}\r\nTODO: HEADERS\r\n\r\n{}",self.status.code(),self.status,body)
+        write!(self.writer.borrow_mut(),"HTTP/1.1 {} {}\r\nTODO: HEADERS\r\n\r\n{}",self.status.code(),self.status,body)
     }
 }
 
 #[test]
 #[cfg(test)]
 fn test_response() {
-    let mut b: Vec<u8> = Vec::new();
-    let mut res = Response::new(&mut b);
+
+
+    let b = Rc::new(RefCell::new(Vec::<u8>::new()));
+    let mut res = Response::new(b.clone());
 
     if let Err(e) = res.gen_404().append(Str!("Apples")).send() {
         panic!("error writing to buffer, {}", e);
     }
-    
-    let buf_str = String::from_utf8_lossy(&b);
+
+    let b = &b.borrow()[..];
+    let buf_str = String::from_utf8_lossy(b);
     println!("buffer: {:?}", buf_str);
     assert_eq!(
         buf_str, 

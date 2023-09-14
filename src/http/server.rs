@@ -1,5 +1,9 @@
-use std::io::Read;
-use std::net::TcpListener;
+use std::{
+    io::Read,
+    net::TcpListener,
+    rc::Rc,
+    cell::RefCell
+};
 use super::{Request, Response, RequestHandler};
 
 pub struct Server {
@@ -32,7 +36,7 @@ impl Server {
 
             let mut bytes = [0; (2 as usize).pow(10)];
             let read_result = stream.read(&mut bytes);
-            let mut response = Response::new(&mut stream);
+            let mut response = Response::new(Rc::new(RefCell::new(stream)));
 
             if let Err(e) = read_result {
                 println!("Failed to read request bytes {}", e);

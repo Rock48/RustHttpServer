@@ -80,7 +80,7 @@ impl Server {
         })
     }
 
-    fn decode<'s>(stream: Rc<RefCell<TcpStream>>, bytes: &'s mut [u8]) -> IoResult<Request<'s>> {
+    fn decode(stream: Rc<RefCell<TcpStream>>, bytes: &mut [u8]) -> IoResult<Request> {
         let read_result = stream.borrow_mut().read(bytes);
         if let Err(e) = read_result {
             eprintln!("Failed to read request bytes {}", e);

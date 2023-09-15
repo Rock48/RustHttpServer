@@ -19,7 +19,7 @@ mod website_handler;
 mod http;
 use http::Server;
 use website_handler::WebsiteHandler;
-use std::env;
+use std::{env, sync::Arc};
 
 fn main() {
     let mut server = Server::new("127.0.0.1".to_string(), 8080);
@@ -27,5 +27,5 @@ fn main() {
     let pub_dir = env::var("default_public").unwrap_or(default_public);
     println!("Public path set to: {}", pub_dir);
     let handler = WebsiteHandler::new(pub_dir);
-    server.run(handler);
+    server.run(Arc::new(handler));
 }

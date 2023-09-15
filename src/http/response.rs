@@ -98,8 +98,6 @@ impl Response {
 #[test]
 #[cfg(test)]
 fn test_response() {
-
-
     let b = Rc::new(RefCell::new(Vec::<u8>::new()));
     let mut res = Response::new(b.clone());
 
@@ -107,7 +105,7 @@ fn test_response() {
         panic!("error writing to buffer, {}", e);
     }
 
-    let b = &b.borrow()[..];
+    let b = &b.borrow();
     let buf_str = String::from_utf8_lossy(b);
     println!("buffer: {:?}", buf_str);
     assert_eq!(

@@ -2,8 +2,9 @@ use std::io::Result as IoResult;
 
 use super::{ Method, Request, Response };
 
+
 pub trait RequestHandler { 
-    fn handle(&self, req: &Request, res: &mut Response) {
+    fn handle(&self, req: &Request, res: &mut Response) -> IoResult<()> {
         let result = match req.method() {
             Method::GET => self.get(req, res),
             Method::POST => self.post(req, res),
@@ -16,15 +17,18 @@ pub trait RequestHandler {
             Method::PATCH => self.patch(req, res),
         };
 
-        if let Err(e) = result {
-            println!("Sending response failed with error {}", e);
+        if let Err(e) = &result {
+            eprintln!("Sending response failed with error {}", e);
         }
+        result
     }
 
-    fn handle_bad(&self, res: &mut Response, body: &str) {
+    fn handle_bad(&self, res: &mut Response, body: &str) -> IoResult<()> {
         if let Err(e) = res.bad_request(Some(format!("<h1>400 Bad Request</h1><p>{}</p>", body))) {
-            println!("Sending 400 response failed with error {}", e);
+            eprintln!("Sending 400 response failed with error {}", e);
+            return Err(e);
         }
+        Ok(())
     }
     
     fn get(&self, _req: &Request, res: &mut Response) -> IoResult<()> { res.send_404() }

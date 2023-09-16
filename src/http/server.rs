@@ -20,18 +20,16 @@ pub struct Server {
 
 impl Server {
     pub fn new(ip: String, port: u16) -> Self {
-        let thread_count = thread::available_parallelism().unwrap_or(NonZeroUsize::new(1).unwrap()).get();
-        let thread_pool = ThreadPoolBuilder::new().num_threads(thread_count).build().expect("Thread pool failed to build!!!");
         Server {
             listener: TcpListener::bind(format!("{}:{}", &ip, port)).expect("Port is already in use"),
             ip,
             port,
-            thread_pool
+            thread_pool: ThreadPoolBuilder::new().build().expect("Thread pool failed to build!!!")
         }
     }
 
     pub fn run(&mut self, handler: Arc<impl RequestHandler + Send + Sync + 'static>) {
-        println!("Listening on {}", self.addr());
+        println!("Listening on {} with {} threads", self.addr(), self.thread_pool.current_num_threads());
 
         loop { 
             let stream = match self.listener.accept() {
@@ -42,7 +40,7 @@ impl Server {
                 Ok((stream, _)) => stream,
             };
 
-            self.spawn_thread(&handler, stream);
+            self.add_pool_task(&handler, stream);
         }
     }
 
@@ -50,7 +48,7 @@ impl Server {
         format!("{}:{}", self.ip, self.port)
     }
 
-    fn spawn_thread(&self, handler: &Arc<impl RequestHandler + Send + Sync + 'static>, stream: TcpStream) {
+    fn add_pool_task(&self, handler: &Arc<impl RequestHandler + Send + Sync + 'static>, stream: TcpStream) {
         let handler = handler.clone();
         self.thread_pool.spawn(move || {
             let stream = Rc::new(RefCell::new(stream));
